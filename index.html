@@ -1,338 +1,1436 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UMT Portal Assistant | Dashboard</title>
-    <!-- Google Fonts & FontAwesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>AI PrepPro - Smart Quiz & Slide Prep Engine</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            900: '#134e4a',
+                        },
+                        cyber: {
+                            bg: '#0a0f1d',
+                            card: 'rgba(17, 24, 39, 0.75)',
+                            border: 'rgba(255, 255, 255, 0.1)',
+                            accent: '#00f3ff',
+                            neon: '#a855f7'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --accent-blue: #38bdf8;
-            --accent-purple: #818cf8;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --success-bg: rgba(34, 197, 94, 0.2);
-            --success-text: #4ade80;
-            --warning-bg: rgba(245, 158, 11, 0.2);
-            --warning-text: #fbbf24;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
         body {
-            background-color: var(--bg-color);
-            background-image: radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
-                              radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.12) 0px, transparent 50%);
-            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            background-color: #060913;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 243, 255, 0.12) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #f3f4f6;
             min-height: 100vh;
-            padding: 40px 20px;
         }
 
-        .dashboard-container {
-            max-width: 950px;
-            margin: 0 auto;
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        /* Header Section */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            padding: 24px 30px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 30px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        .glass-input {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f3f4f6;
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            border-color: #00f3ff;
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
+            outline: none;
         }
 
-        .header-title h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .btn-glow {
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.4);
+            transform: translateY(-2px);
         }
 
-        .header-title p {
-            font-size: 0.875rem;
-            color: var(--text-sub);
-            margin-top: 4px;
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
         }
 
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(34, 197, 94, 0.15);
-            color: var(--success-text);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-
-        .status-dot {
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
-            background-color: var(--success-text);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--success-text);
         }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
         }
-
-        .stat-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            padding: 20px;
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 16px;
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
         }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: rgba(56, 189, 248, 0.1);
-            color: var(--accent-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-
-        .stat-info h3 {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-sub);
-        }
-
-        .stat-info p {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-top: 2px;
-        }
-
-        /* Content Section */
-        .section-header {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .task-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .task-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            padding: 20px 24px;
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        .task-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(56, 189, 248, 0.4);
-        }
-
-        .task-details {
-            max-width: 70%;
-        }
-
-        .task-tags {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .tag {
-            font-size: 0.75rem;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        .tag-course {
-            background: rgba(129, 140, 248, 0.2);
-            color: var(--accent-purple);
-        }
-
-        .tag-type-assignment {
-            background: var(--warning-bg);
-            color: var(--warning-text);
-        }
-
-        .tag-type-quiz {
-            background: rgba(236, 72, 153, 0.2);
-            color: #f472b6;
-        }
-
-        .task-title {
-            font-size: 1.05rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .task-meta {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            display: flex;
-            gap: 16px;
-        }
-
-        .download-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #0284c7, #2563eb);
-            color: white;
-            text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: opacity 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .download-btn:hover {
-            opacity: 0.9;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
-        }
-
-        /* Footer */
-        footer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 243, 255, 0.5);
         }
     </style>
 </head>
-<body>
+<body class="flex flex-col min-h-screen">
 
-    <div class="dashboard-container">
-        <!-- Header -->
-        <header>
-            <div class="header-title">
-                <h1>UMT AI Student Assistant</h1>
-                <p>Automated Portal Scraping & Solution Management</p>
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80 px-4 lg:px-8 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('setup')">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30">
+                <i class="fa-solid fa-brain text-xl"></i>
             </div>
-            <div class="status-badge">
-                <span class="status-dot"></span> System Active
-            </div>
-        </header>
-
-        <!-- Stats Overview -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fa-solid fa-list-check"></i></div>
-                <div class="stat-info">
-                    <h3>Total Tasks</h3>
-                    <p>2</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fa-solid fa-file-pdf"></i></div>
-                <div class="stat-info">
-                    <h3>PDF Solutions</h3>
-                    <p>1 Ready</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fa-solid fa-bell"></i></div>
-                <div class="stat-info">
-                    <h3>Notifications</h3>
-                    <p>Telegram Sent</p>
-                </div>
+            <div>
+                <h1 class="font-extrabold text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-400">AI PrepPro</h1>
+                <p class="text-xs text-gray-400 font-medium">Smart Slide Quizzer & Diagnostic Engine</p>
             </div>
         </div>
 
-        <!-- Task List -->
-        <div class="section-header">
-            <i class="fa-solid fa-graduation-cap" style="color: var(--accent-blue);"></i> Active Tasks & AI Solutions
-        </div>
+        <nav class="hidden md:flex items-center space-x-2">
+            <button onclick="switchTab('setup')" id="nav-setup" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-cyan-400 bg-cyan-950/40 border border-cyan-500/30 flex items-center gap-2">
+                <i class="fa-solid fa-file-arrow-up"></i> Upload & Generator
+            </button>
+            <button onclick="switchTab('flashcards')" id="nav-flashcards" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-gray-200 hover:bg-gray-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-layer-group"></i> Flashcards
+            </button>
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-gray-200 hover:bg-gray-800/40 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie"></i> History & Analytics
+            </button>
+        </nav>
 
-        <div class="task-list">
-            <!-- Task 1 -->
-            <div class="task-card">
-                <div class="task-details">
-                    <div class="task-tags">
-                        <span class="tag tag-course">CS-101</span>
-                        <span class="tag tag-type-assignment">Assignment</span>
-                    </div>
-                    <div class="task-title">Assignment 1: Data Structures & Algorithms Implementation</div>
-                    <div class="task-meta">
-                        <span><i class="fa-regular fa-calendar"></i> Deadline: Nov 05, 2026</span>
-                        <span><i class="fa-regular fa-clock"></i> Daily Auto Sync</span>
-                    </div>
-                </div>
-                <a href="CS101_ASS1_Solution.pdf" target="_blank" class="download-btn">
-                    <i class="fa-solid fa-download"></i> Solution PDF
-                </a>
-            </div>
-
-            <!-- Task 2 -->
-            <div class="task-card">
-                <div class="task-details">
-                    <div class="task-tags">
-                        <span class="tag tag-course">CS-204</span>
-                        <span class="tag tag-type-quiz">Quiz Alert</span>
-                    </div>
-                    <div class="task-title">Quiz 2: Relational Algebra & SQL Optimization</div>
-                    <div class="task-meta">
-                        <span><i class="fa-regular fa-calendar"></i> Deadline: Nov 02, 2026</span>
-                        <span><i class="fa-solid fa-book-open"></i> Revision Mode</span>
-                    </div>
-                </div>
-                <span style="font-size: 0.85rem; color: var(--text-sub); font-style: italic;">
-                    <i class="fa-solid fa-info-circle"></i> Revision Only
-                </span>
+        <div class="flex items-center gap-3">
+            <button onclick="openCustomMCQModal()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 flex items-center gap-1.5">
+                <i class="fa-solid fa-plus"></i> Manual MCQ
+            </button>
+            <div id="statsBadge" class="hidden sm:flex items-center bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700/60 text-xs text-gray-300 gap-2">
+                <i class="fa-solid fa-trophy text-amber-400"></i>
+                <span id="headerTotalQuizzes">0 Quizzes</span>
             </div>
         </div>
+    </header>
 
-        <!-- Footer -->
-        <footer>
-            <p>Powered by GitHub Actions & Mistral-7B LLM | UMT Automated Student Suite</p>
-        </footer>
+    <!-- Main Content Body -->
+    <main class="flex-grow container mx-auto px-4 py-6 max-w-7xl">
+
+        <!-- ================= TAB 1: SETUP & GENERATOR ================= -->
+        <section id="tab-setup" class="space-y-6">
+            <!-- Hero / Upload Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- File Upload & Text Input (8 cols) -->
+                <div class="lg:col-span-7 glass-panel rounded-2xl p-6 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <h2 class="text-xl font-bold mb-2 flex items-center gap-2 text-cyan-300">
+                        <i class="fa-solid fa-file-pdf"></i> Upload Study Material / Slides
+                    </h2>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Upload lecture PDF slides or paste raw study notes. Our offline NLP engine will extract concepts, topics, and build customized practice questions.
+                    </p>
+
+                    <!-- Dropzone -->
+                    <div id="dropZone" class="border-2 border-dashed border-gray-700 hover:border-cyan-400 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-900/40 hover:bg-slate-900/70 group relative">
+                        <input type="file" id="pdfFileInput" accept=".pdf,.txt" class="hidden" onchange="handleFileSelect(event)">
+                        <div class="flex flex-col items-center justify-center space-y-3">
+                            <div class="w-14 h-14 rounded-full bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-200">Click to browse or drag & drop PDF / TXT slides</p>
+                                <p class="text-xs text-gray-400 mt-1">Maximum file size: 25MB (Processed 100% locally in browser)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="fileInfoBadge" class="hidden mt-3 p-3 bg-cyan-950/50 border border-cyan-500/40 rounded-xl flex items-center justify-between text-sm">
+                        <div class="flex items-center space-x-3 overflow-hidden">
+                            <i class="fa-solid fa-file-lines text-cyan-400 text-lg"></i>
+                            <span id="fileName" class="font-medium text-gray-200 truncate">slides.pdf</span>
+                            <span id="filePages" class="text-xs text-cyan-300 bg-cyan-900/60 px-2 py-0.5 rounded-md">0 Pages</span>
+                        </div>
+                        <button onclick="clearFile()" class="text-gray-400 hover:text-rose-400 p-1"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- OR Paste Text Section -->
+                    <div class="mt-4">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Or Paste Raw Text / Slides Content</label>
+                            <button onclick="loadSampleText()" class="text-xs text-cyan-400 hover:underline"><i class="fa-solid fa-wand-magic-sparkles"></i> Load CS Sample Slides</button>
+                        </div>
+                        <textarea id="rawTextInput" rows="5" class="w-full glass-input rounded-xl p-3 text-sm focus:ring-1 focus:ring-cyan-400" placeholder="Paste slide bullet points, course notes, or chapter text here..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Quiz Configuration Panel (5 cols) -->
+                <div class="lg:col-span-5 glass-panel rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-purple-300">
+                            <i class="fa-solid fa-sliders"></i> Quiz Settings & Tuning
+                        </h2>
+
+                        <!-- Subject Dropdown -->
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Subject Category</label>
+                            <select id="subjectSelect" class="w-full glass-input rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-purple-400">
+                                <option value="Computer Science">💻 Computer Science & IT</option>
+                                <option value="Data Structures & Algorithms">⚡ Data Structures & Algorithms</option>
+                                <option value="AI & Machine Learning">🤖 AI & Machine Learning</option>
+                                <option value="Mathematics & Logic">📐 Mathematics & Logic</option>
+                                <option value="General Science">🔬 General Science / Medical</option>
+                                <option value="Custom General">🌐 Custom / General Knowledge</option>
+                            </select>
+                        </div>
+
+                        <!-- MCQ Count Selection -->
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Number of MCQs</label>
+                            <div class="grid grid-cols-5 gap-2" id="mcqCountBtns">
+                                <button onclick="setMcqCount(5)" class="count-btn py-2 rounded-xl text-sm font-bold border border-purple-500/30 bg-purple-900/30 text-purple-300 hover:bg-purple-600 hover:text-white transition-all">5</button>
+                                <button onclick="setMcqCount(10)" class="count-btn py-2 rounded-xl text-sm font-bold border border-purple-500/30 bg-purple-600 text-white shadow-lg shadow-purple-500/30">10</button>
+                                <button onclick="setMcqCount(15)" class="count-btn py-2 rounded-xl text-sm font-bold border border-purple-500/30 bg-purple-900/30 text-purple-300 hover:bg-purple-600 hover:text-white transition-all">15</button>
+                                <button onclick="setMcqCount(20)" class="count-btn py-2 rounded-xl text-sm font-bold border border-purple-500/30 bg-purple-900/30 text-purple-300 hover:bg-purple-600 hover:text-white transition-all">20</button>
+                                <button onclick="setMcqCount(25)" class="count-btn py-2 rounded-xl text-sm font-bold border border-purple-500/30 bg-purple-900/30 text-purple-300 hover:bg-purple-600 hover:text-white transition-all">25</button>
+                            </div>
+                        </div>
+
+                        <!-- Timer Option -->
+                        <div class="mb-5">
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Quiz Timer</label>
+                            <select id="timerModeSelect" class="w-full glass-input rounded-xl px-3 py-2.5 text-sm">
+                                <option value="per_30">⏱️ 30 Seconds per Question</option>
+                                <option value="per_60" selected>⏱️ 60 Seconds per Question</option>
+                                <option value="total_5">⌛ 5 Minutes Total Time</option>
+                                <option value="total_10">⌛ 10 Minutes Total Time</option>
+                                <option value="none">♾️ No Timer (Practice Mode)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Generate Actions -->
+                    <div class="space-y-3 pt-2">
+                        <button onclick="generateQuiz()" class="w-full py-3.5 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 via-teal-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 btn-glow flex items-center justify-center space-x-2 text-base">
+                            <i class="fa-solid fa-bolt text-amber-300"></i>
+                            <span>Generate Quiz & Start Practice</span>
+                        </button>
+                        <button onclick="generateFlashcardsFromInput()" class="w-full py-2.5 px-4 rounded-xl font-semibold text-cyan-300 bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30 flex items-center justify-center space-x-2 text-sm transition-all">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <span>Generate Flashcards First</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pre-Generated Topic Previews / Quick Cards -->
+            <div id="extractionStatus" class="hidden glass-panel rounded-2xl p-4 text-sm text-cyan-300 border border-cyan-500/40 flex items-center space-x-3">
+                <i class="fa-solid fa-spinner fa-spin text-lg"></i>
+                <span id="extractionMsg">Processing file content...</span>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: ACTIVE QUIZ VIEW ================= -->
+        <section id="tab-quiz" class="hidden space-y-6">
+            <!-- Quiz Control Bar -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 border-l-4 border-l-cyan-400">
+                <div class="flex items-center space-x-3">
+                    <span id="quizSubjectTag" class="px-3 py-1 rounded-full text-xs font-bold bg-purple-900/60 border border-purple-500/40 text-purple-200">
+                        Computer Science
+                    </span>
+                    <span id="questionCounter" class="text-sm font-semibold text-gray-300">
+                        Question <strong class="text-cyan-300 text-base" id="currQNum">1</strong> / <span id="totalQNum">10</span>
+                    </span>
+                </div>
+
+                <!-- Timer Display -->
+                <div id="timerContainer" class="flex items-center space-x-2 bg-slate-900/80 px-4 py-1.5 rounded-xl border border-cyan-500/30">
+                    <i class="fa-solid fa-clock text-cyan-400 animate-pulse"></i>
+                    <span id="timerDisplay" class="font-mono font-bold text-lg text-cyan-300">00:00</span>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="flagQuestion()" id="flagBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-amber-950/60 text-gray-300 hover:text-amber-300 border border-gray-700 transition-all flex items-center gap-1.5">
+                        <i class="fa-regular fa-bookmark"></i> Flag Question
+                    </button>
+                    <button onclick="confirmSubmitQuiz()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-rose-600/80 hover:bg-rose-500 text-white shadow-md shadow-rose-600/20 flex items-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Quiz
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Progress Bar -->
+            <div class="w-full bg-gray-800/60 rounded-full h-2 overflow-hidden border border-gray-700/50">
+                <div id="quizProgressBar" class="bg-gradient-to-r from-cyan-400 to-purple-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- MCQ Question Box -->
+            <div class="glass-panel rounded-2xl p-6 md:p-8 relative min-h-[380px] flex flex-col justify-between">
+                <div>
+                    <!-- Topic Tag & Hint Trigger -->
+                    <div class="flex justify-between items-center mb-4">
+                        <span id="qTopicTag" class="text-xs font-bold text-teal-400 bg-teal-950/50 border border-teal-500/30 px-3 py-1 rounded-md">
+                            Topic: General Concept
+                        </span>
+                        <button onclick="toggleHint()" class="text-xs font-semibold text-amber-300 hover:text-amber-200 bg-amber-950/40 border border-amber-500/30 px-3 py-1 rounded-md flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-lightbulb"></i> <span id="hintBtnText">Show Concept Hint</span>
+                        </button>
+                    </div>
+
+                    <!-- Hint Box -->
+                    <div id="hintBox" class="hidden mb-4 p-3.5 bg-amber-950/30 border border-amber-500/40 rounded-xl text-xs text-amber-200/90 leading-relaxed">
+                        <i class="fa-solid fa-circle-info mr-1 text-amber-400"></i>
+                        <span id="hintText">Hint text will appear here.</span>
+                    </div>
+
+                    <!-- Question Text -->
+                    <h3 id="questionText" class="text-lg md:text-xl font-semibold text-gray-100 leading-snug mb-6">
+                        Loading Question...
+                    </h3>
+
+                    <!-- Options Container -->
+                    <div id="optionsContainer" class="space-y-3">
+                        <!-- Options injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Footer Navigation Buttons -->
+                <div class="flex justify-between items-center pt-8 border-t border-gray-800/80 mt-6">
+                    <button onclick="prevQuestion()" id="prevQBtn" class="px-5 py-2.5 rounded-xl font-semibold text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Previous
+                    </button>
+
+                    <div class="flex items-center space-x-2" id="questionDotsNav">
+                        <!-- Navigation Dots injected -->
+                    </div>
+
+                    <button onclick="nextQuestion()" id="nextQBtn" class="px-5 py-2.5 rounded-xl font-semibold text-sm bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/30 transition-all flex items-center gap-2">
+                        Next <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: QUIZ RESULTS & DEEP DIAGNOSTICS ================= -->
+        <section id="tab-results" class="hidden space-y-6">
+            <!-- Score & Readiness Header -->
+            <div class="glass-panel rounded-2xl p-6 md:p-8 relative overflow-hidden">
+                <div id="scoreBgGradient" class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-transparent pointer-events-none"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
+                    <div class="md:col-span-8 space-y-3">
+                        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-bold bg-cyan-950/60 border border-cyan-500/40 text-cyan-300">
+                            <i class="fa-solid fa-square-poll-vertical"></i> Detailed Readiness Report
+                        </div>
+                        <h2 class="text-3xl font-extrabold text-white">Quiz Completed!</h2>
+                        <p id="readinessAssessment" class="text-gray-300 text-sm leading-relaxed">
+                            Evaluating your preparation levels based on speed, accuracy, and topic breakdown...
+                        </p>
+
+                        <!-- Highlights Pill List -->
+                        <div class="flex flex-wrap gap-4 pt-2">
+                            <div class="bg-gray-900/80 border border-gray-800 px-4 py-2 rounded-xl">
+                                <p class="text-xs text-gray-400">Score</p>
+                                <p id="resultScoreText" class="text-xl font-extrabold text-cyan-300">0 / 0</p>
+                            </div>
+                            <div class="bg-gray-900/80 border border-gray-800 px-4 py-2 rounded-xl">
+                                <p class="text-xs text-gray-400">Accuracy</p>
+                                <p id="resultAccuracyText" class="text-xl font-extrabold text-emerald-400">0%</p>
+                            </div>
+                            <div class="bg-gray-900/80 border border-gray-800 px-4 py-2 rounded-xl">
+                                <p class="text-xs text-gray-400">Time Spent</p>
+                                <p id="resultTimeText" class="text-xl font-extrabold text-purple-300">0m 0s</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grade Circle Badge -->
+                    <div class="md:col-span-4 flex flex-col items-center justify-center p-4 bg-slate-900/60 rounded-2xl border border-gray-800">
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">Preparation Grade</span>
+                        <div id="gradeBadge" class="w-24 h-24 rounded-full border-4 border-emerald-400 flex items-center justify-center text-4xl font-black text-emerald-400 shadow-lg shadow-emerald-500/20">
+                            A+
+                        </div>
+                        <p id="gradeTitle" class="text-xs font-bold text-gray-300 mt-2">EXCELLENT READY</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weak Area Warning Box -->
+            <div id="weakAreaCard" class="hidden glass-panel rounded-2xl p-5 border-l-4 border-l-rose-500 bg-rose-950/20">
+                <div class="flex items-start space-x-3">
+                    <div class="p-2 rounded-lg bg-rose-500/20 text-rose-400">
+                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-bold text-rose-300">Weak Area & Concept Gap Detected!</h4>
+                        <p id="weakAreaDescription" class="text-sm text-gray-300 mt-1 leading-relaxed">
+                            You got most questions wrong in <strong>Data Structures</strong>. It is recommended to review these slides again before taking an exam.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Charts Dashboard -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Topic Performance Radar/Bar -->
+                <div class="glass-panel rounded-2xl p-5">
+                    <h3 class="text-base font-bold text-gray-200 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-radar text-cyan-400"></i> Topic Performance Breakdown
+                    </h3>
+                    <div class="relative h-64 w-full flex items-center justify-center">
+                        <canvas id="topicRadarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Accuracy Donut Chart -->
+                <div class="glass-panel rounded-2xl p-5">
+                    <h3 class="text-base font-bold text-gray-200 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-purple-400"></i> Answer Distribution
+                    </h3>
+                    <div class="relative h-64 w-full flex items-center justify-center">
+                        <canvas id="accuracyDonutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Detailed Review Section -->
+            <div class="glass-panel rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-gray-200 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-cyan-400"></i> Question & Answer Review
+                    </h3>
+                    <button onclick="exportQuizResults()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5">
+                        <i class="fa-solid fa-download"></i> Export Results JSON
+                    </button>
+                </div>
+
+                <div id="reviewQuestionsContainer" class="space-y-4">
+                    <!-- Dynamic review items generated here -->
+                </div>
+            </div>
+
+            <!-- Action Buttons Footer -->
+            <div class="flex flex-wrap justify-between gap-4 pt-4">
+                <button onclick="switchTab('setup')" class="px-6 py-3 rounded-xl font-bold bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> Start New Quiz
+                </button>
+                <button onclick="retryCurrentQuiz()" class="px-6 py-3 rounded-xl font-bold bg-purple-600 hover:bg-purple-500 text-white text-sm shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-repeat"></i> Retry Failed Questions
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: FLASHCARDS ================= -->
+        <section id="tab-flashcards" class="hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-6">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-100 flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-purple-400"></i> Concept Flashcards
+                        </h2>
+                        <p class="text-xs text-gray-400">Click card to flip and reveal key definition/explanation.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span id="flashcardCounter" class="text-xs font-bold text-cyan-300 bg-cyan-950 px-3 py-1 rounded-full border border-cyan-500/30">
+                            1 / 10
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Flashcard Display -->
+                <div class="max-w-xl mx-auto perspective-1000 my-8">
+                    <div id="flashcardElement" onclick="flipFlashcard()" class="w-full h-80 relative transform-style-3d transition-transform duration-500 cursor-pointer glass-panel rounded-2xl border-2 border-purple-500/30 p-8 flex flex-col items-center justify-center text-center shadow-2xl">
+                        <!-- Front -->
+                        <div id="cardFront" class="absolute inset-0 backface-hidden p-8 flex flex-col items-center justify-center">
+                            <span class="text-xs font-extrabold uppercase text-purple-400 tracking-widest mb-3">KEY TERM / CONCEPT</span>
+                            <h3 id="flashcardTerm" class="text-2xl font-bold text-white">Upload content to generate flashcards</h3>
+                            <p class="text-xs text-gray-400 mt-6 flex items-center gap-1"><i class="fa-solid fa-hand-pointer"></i> Click card to flip</p>
+                        </div>
+                        <!-- Back -->
+                        <div id="cardBack" class="absolute inset-0 backface-hidden rotate-y-180 p-8 flex flex-col items-center justify-center bg-slate-900/90 rounded-2xl">
+                            <span class="text-xs font-extrabold uppercase text-cyan-400 tracking-widest mb-3">EXPLANATION</span>
+                            <p id="flashcardDefinition" class="text-sm md:text-base text-gray-200 leading-relaxed">
+                                Definition will appear here.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex justify-center items-center space-x-4">
+                    <button onclick="prevFlashcard()" class="px-5 py-2.5 rounded-xl font-semibold text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-all">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Prev Card
+                    </button>
+                    <button onclick="nextFlashcard()" class="px-5 py-2.5 rounded-xl font-semibold text-sm bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/30 transition-all">
+                        Next Card <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: HISTORY & ANALYTICS ================= -->
+        <section id="tab-analytics" class="hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-100 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Overall Preparation History
+                        </h2>
+                        <p class="text-xs text-gray-400">Track accuracy trends across all quiz sessions over time.</p>
+                    </div>
+                    <button onclick="clearHistory()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-950/40 hover:bg-rose-900 text-rose-300 border border-rose-500/30">
+                        <i class="fa-solid fa-trash-can"></i> Clear Saved Data
+                    </button>
+                </div>
+
+                <!-- History Line Chart -->
+                <div class="relative h-72 w-full mb-8">
+                    <canvas id="historyLineChart"></canvas>
+                </div>
+
+                <!-- History Table -->
+                <h3 class="text-base font-bold text-gray-200 mb-3">Past Quiz Log</h3>
+                <div class="overflow-x-auto rounded-xl border border-gray-800">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="bg-slate-900/80 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-800">
+                            <tr>
+                                <th class="p-3">Date</th>
+                                <th class="p-3">Subject</th>
+                                <th class="p-3">Score</th>
+                                <th class="p-3">Accuracy</th>
+                                <th class="p-3">Time</th>
+                                <th class="p-3">Weak Spot</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-gray-800/60 bg-slate-950/40">
+                            <tr>
+                                <td colspan="6" class="p-4 text-center text-xs text-gray-500">No previous quiz history found. Complete a quiz to view your trends!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal: Add Manual Custom MCQ -->
+    <div id="customMCQModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl max-w-lg w-full p-6 border border-purple-500/40 space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <h3 class="text-lg font-bold text-purple-300"><i class="fa-solid fa-plus-circle"></i> Add Custom Practice Question</h3>
+                <button onclick="closeCustomMCQModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Question Statement</label>
+                <input type="text" id="customQStatement" class="w-full glass-input rounded-xl p-2.5 text-sm" placeholder="e.g. What is the time complexity of QuickSort average case?">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Option A</label>
+                    <input type="text" id="customOptA" class="w-full glass-input rounded-xl p-2 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Option B</label>
+                    <input type="text" id="customOptB" class="w-full glass-input rounded-xl p-2 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Option C</label>
+                    <input type="text" id="customOptC" class="w-full glass-input rounded-xl p-2 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Option D</label>
+                    <input type="text" id="customOptD" class="w-full glass-input rounded-xl p-2 text-xs">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Correct Answer Index</label>
+                    <select id="customCorrectIdx" class="w-full glass-input rounded-xl p-2 text-xs">
+                        <option value="0">Option A</option>
+                        <option value="1">Option B</option>
+                        <option value="2">Option C</option>
+                        <option value="3">Option D</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Topic / Category</label>
+                    <input type="text" id="customTopic" class="w-full glass-input rounded-xl p-2 text-xs" placeholder="e.g. Algorithms">
+                </div>
+            </div>
+
+            <button onclick="saveCustomMCQ()" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 font-bold text-white text-sm">
+                Add Question to Active Pool
+            </button>
+        </div>
     </div>
 
+    <!-- Application Script -->
+    <script>
+        /* Global Application State */
+        let state = {
+            extractedText: "",
+            selectedMcqCount: 10,
+            subject: "Computer Science",
+            questions: [],
+            currentQIdx: 0,
+            userAnswers: [], // Array storing selected choice index
+            flagged: [],     // Array of boolean flags
+            timerSeconds: 0,
+            timerInterval: null,
+            flashcards: [],
+            currentCardIdx: 0,
+            quizStartTime: null,
+            timeSpentSec: 0,
+            customMCQs: []
+        };
+
+        // Chart instances
+        let topicRadarChartInstance = null;
+        let accuracyDonutChartInstance = null;
+        let historyLineChartInstance = null;
+
+        /* Standard CS Default Text Fallback */
+        const sampleCSContent = `
+        Operating Systems and Computer Architecture Fundamentals:
+        An Operating System (OS) acts as an intermediary between a user of a computer and the computer hardware.
+        CPU Scheduling algorithms include First-Come First-Served (FCFS), Shortest Job First (SJF), and Round Robin (RR).
+        Virtual Memory enables a computer to compensate for physical memory shortages by temporarily transferring data from RAM to disk storage.
+        Page replacement algorithms such as LRU (Least Recently Used) decide which memory pages to page out.
+        Deadlock occurs when a set of processes are blocked because each process is holding a resource and waiting for another resource.
+        The four necessary conditions for deadlock are Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait.
+
+        Data Structures and Algorithms Concepts:
+        A Binary Search Tree (BST) is a node-based binary tree data structure with average time complexity O(log n) for search and insertion.
+        Array search time complexity is O(n) for linear search and O(log n) for binary search on sorted arrays.
+        Stack follows LIFO (Last In First Out) principle, whereas Queue follows FIFO (First In First Out).
+        QuickSort has an average case performance of O(n log n) and worst case of O(n^2).
+        Graph traversal algorithms include Breadth-First Search (BFS) using Queue and Depth-First Search (DFS) using Stack.
+
+        Machine Learning and AI Fundamentals:
+        Supervised Learning trains models on labeled data, while Unsupervised Learning finds hidden patterns in unlabeled data.
+        Overfitting happens when a model learns noise in training data and performs poorly on unseen test data.
+        Artificial Neural Networks consist of Input, Hidden, and Output layers using activation functions like ReLU and Sigmoid.
+        `;
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            initHistoryStats();
+            setupDragAndDrop();
+        });
+
+        /* Tab Switcher Logic */
+        function switchTab(tabName) {
+            ['setup', 'quiz', 'results', 'flashcards', 'analytics'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (el) el.classList.add('hidden');
+                
+                const navBtn = document.getElementById(`nav-${t}`);
+                if (navBtn) {
+                    navBtn.classList.remove('text-cyan-400', 'bg-cyan-950/40', 'border-cyan-500/30');
+                    navBtn.classList.add('text-gray-400');
+                }
+            });
+
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            if (activeTab) activeTab.classList.remove('hidden');
+
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) {
+                activeNav.classList.add('text-cyan-400', 'bg-cyan-950/40', 'border-cyan-500/30');
+                activeNav.classList.remove('text-gray-400');
+            }
+
+            if (tabName === 'analytics') {
+                renderHistoryCharts();
+            }
+        }
+
+        /* MCQ Count Option Selector */
+        function setMcqCount(count) {
+            state.selectedMcqCount = count;
+            const btns = document.querySelectorAll('#mcqCountBtns button');
+            btns.forEach(btn => {
+                btn.className = "count-btn py-2 rounded-xl text-sm font-bold border border-purple-500/30 bg-purple-900/30 text-purple-300 hover:bg-purple-600 hover:text-white transition-all";
+                if (parseInt(btn.innerText) === count) {
+                    btn.className = "count-btn py-2 rounded-xl text-sm font-bold border border-purple-500/30 bg-purple-600 text-white shadow-lg shadow-purple-500/30";
+                }
+            });
+        }
+
+        /* Drag & Drop File Upload Handling */
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('dropZone');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.add('border-cyan-400', 'bg-slate-900/80'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-cyan-400', 'bg-slate-900/80'), false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) processUploadedFile(files[0]);
+            });
+        }
+
+        function handleFileSelect(e) {
+            if (e.target.files.length > 0) {
+                processUploadedFile(e.target.files[0]);
+            }
+        }
+
+        async function processUploadedFile(file) {
+            const statusBox = document.getElementById('extractionStatus');
+            const statusMsg = document.getElementById('extractionMsg');
+            statusBox.classList.remove('hidden');
+            statusMsg.innerText = `Extracting text from "${file.name}"...`;
+
+            document.getElementById('fileInfoBadge').classList.remove('hidden');
+            document.getElementById('fileName').innerText = file.name;
+
+            try {
+                if (file.type === "application/pdf" || file.name.endsWith('.pdf')) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    document.getElementById('filePages').innerText = `${pdf.numPages} Pages`;
+
+                    let text = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        const pageText = content.items.map(item => item.str).join(' ');
+                        text += ` Page ${i}: ` + pageText + "\n";
+                    }
+                    state.extractedText = text;
+                } else {
+                    const text = await file.text();
+                    state.extractedText = text;
+                    document.getElementById('filePages').innerText = `Text File`;
+                }
+
+                statusMsg.innerText = `Successfully parsed file! Extracted ${state.extractedText.length} characters.`;
+                setTimeout(() => statusBox.classList.add('hidden'), 3000);
+            } catch (err) {
+                console.error(err);
+                statusMsg.innerText = "Error parsing file. Please ensure it's a valid text/PDF file.";
+            }
+        }
+
+        function clearFile() {
+            document.getElementById('pdfFileInput').value = "";
+            document.getElementById('fileInfoBadge').classList.add('hidden');
+            state.extractedText = "";
+        }
+
+        function loadSampleText() {
+            document.getElementById('rawTextInput').value = sampleCSContent.trim();
+            state.extractedText = sampleCSContent.trim();
+            alert("Sample Computer Science & OS slides text loaded!");
+        }
+
+        /* NLP Rule-based MCQ Generation Engine */
+        function generateMCQsFromText(text, count) {
+            const sourceText = text.trim() || document.getElementById('rawTextInput').value.trim() || sampleCSContent;
+            const sentences = sourceText.split(/[.!?\n]+/).map(s => s.trim()).filter(s => s.length > 25);
+            
+            let questions = [];
+
+            // Helper to generate distractor terms
+            const distractorsPool = [
+                "Polynomial Time O(n^k)", "First In Last Out (FILO)", "Round Robin Scheduling",
+                "Linear Search O(n)", "Mutual Exclusion Condition", "Supervised Neural Network",
+                "Heap Allocation Memory", "Breadth First Search (BFS)", "Sigmoid Activation Function",
+                "Overfitting & Variance", "Page Fault Rate", "Binary Search O(log n)"
+            ];
+
+            // Extract topic categories
+            const topics = ["Data Structures", "Operating Systems", "Machine Learning", "Algorithms", "Computer Networks"];
+
+            sentences.forEach((sentence, idx) => {
+                if (questions.length >= count) return;
+
+                // Identify potential key terms (capitalized or numbers/complex words)
+                const words = sentence.split(' ');
+                let targetWord = words.find(w => w.length > 5 && !['between', 'through', 'because', 'another'].includes(w.toLowerCase()));
+
+                if (targetWord) {
+                    const cleanTarget = targetWord.replace(/[^a-zA-Z0-9]/g, '');
+                    const questionStr = sentence.replace(targetWord, "________");
+                    
+                    // Create Options
+                    const correctOpt = cleanTarget;
+                    let wrongOpts = distractorsPool.filter(d => d.toLowerCase() !== cleanTarget.toLowerCase());
+                    wrongOpts = wrongOpts.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+                    const allOpts = [correctOpt, ...wrongOpts].sort(() => 0.5 - Math.random());
+                    const correctIdx = allOpts.indexOf(correctOpt);
+
+                    const assignedTopic = topics[idx % topics.length];
+
+                    questions.push({
+                        id: idx + 1,
+                        question: `Complete the key concept statement:\n"${questionStr}"`,
+                        options: allOpts,
+                        correctAnswer: correctIdx,
+                        topic: assignedTopic,
+                        hint: `This question relates to ${assignedTopic}. Key concept: ${sentence.substring(0, 60)}...`
+                    });
+                }
+            });
+
+            // Fallback generated questions if text was too short
+            let fallbackCount = 1;
+            while (questions.length < count) {
+                const sampleTopic = topics[fallbackCount % topics.length];
+                questions.push({
+                    id: questions.length + 1,
+                    question: `Which of the following best describes standard concept #${questions.length + 1} in ${state.subject}?`,
+                    options: [
+                        `Optimized O(log n) efficiency in ${sampleTopic}`,
+                        `Static linear memory allocation structure`,
+                        `Asynchronous non-blocking deadlock resolution`,
+                        `Unsupervised probabilistic cluster mapping`
+                    ],
+                    correctAnswer: 0,
+                    topic: sampleTopic,
+                    hint: `Focus on foundational principles of ${sampleTopic}.`
+                });
+                fallbackCount++;
+            }
+
+            // Append custom user MCQs if available
+            if (state.customMCQs.length > 0) {
+                questions = [...state.customMCQs, ...questions].slice(0, count);
+            }
+
+            return questions;
+        }
+
+        /* Quiz Generation Trigger */
+        function generateQuiz() {
+            state.subject = document.getElementById('subjectSelect').value;
+            state.questions = generateMCQsFromText(state.extractedText, state.selectedMcqCount);
+            state.currentQIdx = 0;
+            state.userAnswers = new Array(state.questions.length).fill(null);
+            state.flagged = new Array(state.questions.length).fill(false);
+            state.quizStartTime = new Date();
+
+            document.getElementById('quizSubjectTag').innerText = state.subject;
+            document.getElementById('totalQNum').innerText = state.questions.length;
+
+            setupTimer();
+            renderQuestion();
+            renderQuestionDots();
+            switchTab('quiz');
+        }
+
+        /* Timer Handler */
+        function setupTimer() {
+            clearInterval(state.timerInterval);
+            const mode = document.getElementById('timerModeSelect').value;
+            const timerContainer = document.getElementById('timerContainer');
+
+            if (mode === 'none') {
+                timerContainer.classList.add('hidden');
+                return;
+            }
+            timerContainer.classList.remove('hidden');
+
+            let totalSeconds = 0;
+            if (mode === 'per_30') totalSeconds = state.questions.length * 30;
+            else if (mode === 'per_60') totalSeconds = state.questions.length * 60;
+            else if (mode === 'total_5') totalSeconds = 300;
+            else if (mode === 'total_10') totalSeconds = 600;
+
+            state.timerSeconds = totalSeconds;
+            updateTimerDisplay();
+
+            state.timerInterval = setInterval(() => {
+                state.timerSeconds--;
+                updateTimerDisplay();
+
+                if (state.timerSeconds <= 0) {
+                    clearInterval(state.timerInterval);
+                    alert("⏱️ Time's up! Submitting your quiz now.");
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(state.timerSeconds / 60);
+            const secs = state.timerSeconds % 60;
+            document.getElementById('timerDisplay').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        /* Render Active Question */
+        function renderQuestion() {
+            const q = state.questions[state.currentQIdx];
+            document.getElementById('currQNum').innerText = state.currentQIdx + 1;
+            document.getElementById('qTopicTag').innerText = `Topic: ${q.topic}`;
+            document.getElementById('questionText').innerText = q.question;
+
+            // Hint state reset
+            document.getElementById('hintBox').classList.add('hidden');
+            document.getElementById('hintText').innerText = q.hint;
+            document.getElementById('hintBtnText').innerText = "Show Concept Hint";
+
+            // Progress bar
+            const prog = ((state.currentQIdx + 1) / state.questions.length) * 100;
+            document.getElementById('quizProgressBar').style.width = `${prog}%`;
+
+            // Flag state
+            const flagBtn = document.getElementById('flagBtn');
+            if (state.flagged[state.currentQIdx]) {
+                flagBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 flex items-center gap-1.5";
+            } else {
+                flagBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-amber-950/60 text-gray-300 hover:text-amber-300 border border-gray-700 transition-all flex items-center gap-1.5";
+            }
+
+            // Options
+            const optsContainer = document.getElementById('optionsContainer');
+            optsContainer.innerHTML = '';
+
+            const selectedIdx = state.userAnswers[state.currentQIdx];
+
+            q.options.forEach((opt, idx) => {
+                const optBtn = document.createElement('button');
+                const isSelected = selectedIdx === idx;
+
+                optBtn.className = isSelected 
+                    ? "w-full p-4 rounded-xl text-left text-sm font-semibold border-2 border-cyan-400 bg-cyan-950/60 text-white flex items-center justify-between shadow-lg shadow-cyan-500/20 transition-all"
+                    : "w-full p-4 rounded-xl text-left text-sm font-medium border border-gray-800 hover:border-gray-600 bg-slate-900/40 text-gray-300 hover:text-white flex items-center justify-between transition-all";
+
+                optBtn.onclick = () => selectOption(idx);
+
+                optBtn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg font-bold flex items-center justify-center text-xs ${isSelected ? 'bg-cyan-400 text-slate-950' : 'bg-gray-800 text-gray-400'}">
+                            ${String.fromCharCode(65 + idx)}
+                        </span>
+                        <span>${opt}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-cyan-400 text-lg"></i>' : ''}
+                `;
+                optsContainer.appendChild(optBtn);
+            });
+
+            // Nav buttons state
+            document.getElementById('prevQBtn').disabled = state.currentQIdx === 0;
+            
+            const nextBtn = document.getElementById('nextQBtn');
+            if (state.currentQIdx === state.questions.length - 1) {
+                nextBtn.innerHTML = 'Review & Submit <i class="fa-solid fa-check-double"></i>';
+                nextBtn.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2";
+            } else {
+                nextBtn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>';
+                nextBtn.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/30 transition-all flex items-center gap-2";
+            }
+
+            updateQuestionDots();
+        }
+
+        function renderQuestionDots() {
+            const container = document.getElementById('questionDotsNav');
+            container.innerHTML = '';
+            state.questions.forEach((_, idx) => {
+                const dot = document.createElement('button');
+                dot.onclick = () => { state.currentQIdx = idx; renderQuestion(); };
+                dot.id = `qDot-${idx}`;
+                dot.className = "w-3 h-3 rounded-full transition-all bg-gray-700";
+                container.appendChild(dot);
+            });
+            updateQuestionDots();
+        }
+
+        function updateQuestionDots() {
+            state.questions.forEach((_, idx) => {
+                const dot = document.getElementById(`qDot-${idx}`);
+                if (!dot) return;
+
+                if (idx === state.currentQIdx) {
+                    dot.className = "w-4 h-4 rounded-full bg-cyan-400 ring-4 ring-cyan-500/20";
+                } else if (state.userAnswers[idx] !== null) {
+                    dot.className = "w-3 h-3 rounded-full bg-emerald-500";
+                } else if (state.flagged[idx]) {
+                    dot.className = "w-3 h-3 rounded-full bg-amber-400";
+                } else {
+                    dot.className = "w-3 h-3 rounded-full bg-gray-700 hover:bg-gray-500";
+                }
+            });
+        }
+
+        function selectOption(optIdx) {
+            state.userAnswers[state.currentQIdx] = optIdx;
+            renderQuestion();
+        }
+
+        function prevQuestion() {
+            if (state.currentQIdx > 0) {
+                state.currentQIdx--;
+                renderQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (state.currentQIdx < state.questions.length - 1) {
+                state.currentQIdx++;
+                renderQuestion();
+            } else {
+                confirmSubmitQuiz();
+            }
+        }
+
+        function flagQuestion() {
+            state.flagged[state.currentQIdx] = !state.flagged[state.currentQIdx];
+            renderQuestion();
+        }
+
+        function toggleHint() {
+            const hintBox = document.getElementById('hintBox');
+            const hintBtnText = document.getElementById('hintBtnText');
+            if (hintBox.classList.contains('hidden')) {
+                hintBox.classList.remove('hidden');
+                hintBtnText.innerText = "Hide Hint";
+            } else {
+                hintBox.classList.add('hidden');
+                hintBtnText.innerText = "Show Concept Hint";
+            }
+        }
+
+        function confirmSubmitQuiz() {
+            const unanswered = state.userAnswers.filter(a => a === null).length;
+            if (unanswered > 0) {
+                if (!confirm(`You still have ${unanswered} unanswered question(s). Are you sure you want to submit?`)) {
+                    return;
+                }
+            }
+            submitQuiz();
+        }
+
+        /* Submit & Deep Results Diagnostics */
+        function submitQuiz() {
+            clearInterval(state.timerInterval);
+            const endTime = new Date();
+            state.timeSpentSec = Math.round((endTime - state.quizStartTime) / 1000);
+
+            let correctCount = 0;
+            let topicStats = {}; // { "Topic": { total: 0, correct: 0 } }
+
+            state.questions.forEach((q, idx) => {
+                if (!topicStats[q.topic]) topicStats[q.topic] = { total: 0, correct: 0 };
+                topicStats[q.topic].total++;
+
+                if (state.userAnswers[idx] === q.correctAnswer) {
+                    correctCount++;
+                    topicStats[q.topic].correct++;
+                }
+            });
+
+            const total = state.questions.length;
+            const accuracy = Math.round((correctCount / total) * 100);
+
+            // Time text
+            const mins = Math.floor(state.timeSpentSec / 60);
+            const secs = state.timeSpentSec % 60;
+            const timeStr = `${mins}m ${secs}s`;
+
+            document.getElementById('resultScoreText').innerText = `${correctCount} / ${total}`;
+            document.getElementById('resultAccuracyText').innerText = `${accuracy}%`;
+            document.getElementById('resultTimeText').innerText = timeStr;
+
+            // Grade evaluation
+            let grade = 'F';
+            let gradeTitle = 'NEEDS REVISION';
+            let gradeColor = 'text-rose-500 border-rose-500';
+
+            if (accuracy >= 90) { grade = 'A+'; gradeTitle = 'EXCELLENT READY'; gradeColor = 'text-emerald-400 border-emerald-400'; }
+            else if (accuracy >= 80) { grade = 'A'; gradeTitle = 'STRONG PREPARATION'; gradeColor = 'text-teal-400 border-teal-400'; }
+            else if (accuracy >= 70) { grade = 'B'; gradeTitle = 'GOOD / SAFE'; gradeColor = 'text-cyan-400 border-cyan-400'; }
+            else if (accuracy >= 50) { grade = 'C'; gradeTitle = 'MODERATE GAP'; gradeColor = 'text-amber-400 border-amber-400'; }
+
+            const gradeBadge = document.getElementById('gradeBadge');
+            gradeBadge.className = `w-24 h-24 rounded-full border-4 flex items-center justify-center text-4xl font-black shadow-lg ${gradeColor}`;
+            gradeBadge.innerText = grade;
+            document.getElementById('gradeTitle').innerText = gradeTitle;
+
+            // Readiness description
+            document.getElementById('readinessAssessment').innerText = 
+                `You scored ${accuracy}% accuracy in ${timeStr}. ${accuracy >= 75 ? 'You are well prepared for exams on this material!' : 'Focus on reviewing weaker topic areas listed below.'}`;
+
+            // Identify weakest area
+            let weakestTopic = null;
+            let lowestRatio = 1.0;
+
+            Object.keys(topicStats).forEach(topic => {
+                const ratio = topicStats[topic].correct / topicStats[topic].total;
+                if (ratio < lowestRatio) {
+                    lowestRatio = ratio;
+                    weakestTopic = topic;
+                }
+            });
+
+            const weakCard = document.getElementById('weakAreaCard');
+            if (weakestTopic && lowestRatio < 0.7) {
+                weakCard.classList.remove('hidden');
+                document.getElementById('weakAreaDescription').innerHTML = 
+                    `You made the most errors in <strong>${weakestTopic}</strong> (${Math.round((1 - lowestRatio) * 100)}% incorrect). Recommended to re-read your slides on ${weakestTopic}!`;
+            } else {
+                weakCard.classList.add('hidden');
+            }
+
+            // Render Charts & Review
+            renderResultsCharts(topicStats, correctCount, total);
+            renderDetailedReview();
+
+            // Save session to LocalStorage
+            saveQuizToHistory({
+                date: new Date().toLocaleDateString(),
+                subject: state.subject,
+                score: `${correctCount}/${total}`,
+                accuracy: accuracy,
+                timeSpent: timeStr,
+                weakArea: weakestTopic || 'None'
+            });
+
+            switchTab('results');
+        }
+
+        /* Render Diagnostic Charts */
+        function renderResultsCharts(topicStats, correctCount, total) {
+            // Radar Chart for Topics
+            const ctxRadar = document.getElementById('topicRadarChart').getContext('2d');
+            if (topicRadarChartInstance) topicRadarChartInstance.destroy();
+
+            const topicLabels = Object.keys(topicStats);
+            const topicScores = topicLabels.map(t => Math.round((topicStats[t].correct / topicStats[t].total) * 100));
+
+            topicRadarChartInstance = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: topicLabels,
+                    datasets: [{
+                        label: 'Topic Accuracy %',
+                        data: topicScores,
+                        backgroundColor: 'rgba(0, 243, 255, 0.2)',
+                        borderColor: '#00f3ff',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#a855f7'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: '#9ca3af', font: { size: 10 } },
+                            ticks: { display: false, backdropColor: 'transparent' },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Donut Chart for Answer breakdown
+            const ctxDonut = document.getElementById('accuracyDonutChart').getContext('2d');
+            if (accuracyDonutChartInstance) accuracyDonutChartInstance.destroy();
+
+            accuracyDonutChartInstance = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Correct', 'Incorrect / Unanswered'],
+                    datasets: [{
+                        data: [correctCount, total - correctCount],
+                        backgroundColor: ['#10b981', '#f43f5e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#d1d5db' } }
+                    }
+                }
+            });
+        }
+
+        /* Render Review Items */
+        function renderDetailedReview() {
+            const container = document.getElementById('reviewQuestionsContainer');
+            container.innerHTML = '';
+
+            state.questions.forEach((q, idx) => {
+                const userAns = state.userAnswers[idx];
+                const isCorrect = userAns === q.correctAnswer;
+
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-rose-950/20 border-rose-500/30'} space-y-2`;
+
+                item.innerHTML = `
+                    <div class="flex justify-between items-start gap-2">
+                        <span class="text-xs font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'} flex items-center gap-1">
+                            <i class="fa-solid ${isCorrect ? 'fa-check-circle' : 'fa-xmark-circle'}"></i>
+                            Q${idx + 1}: ${isCorrect ? 'Correct' : 'Incorrect'}
+                        </span>
+                        <span class="text-xs bg-slate-800 text-gray-400 px-2 py-0.5 rounded">${q.topic}</span>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-200">${q.question}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-1">
+                        <div class="p-2 rounded bg-slate-900/60 text-gray-300">
+                            <strong>Your Choice:</strong> ${userAns !== null ? q.options[userAns] : '<em class="text-gray-500">Not Answered</em>'}
+                        </div>
+                        <div class="p-2 rounded bg-slate-900/60 text-emerald-300">
+                            <strong>Correct Answer:</strong> ${q.options[q.correctAnswer]}
+                        </div>
+                    </div>
+                    <p class="text-xs text-amber-200/80 italic pt-1"><i class="fa-solid fa-lightbulb mr-1"></i> ${q.hint}</p>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function retryCurrentQuiz() {
+            state.userAnswers = new Array(state.questions.length).fill(null);
+            state.currentQIdx = 0;
+            state.quizStartTime = new Date();
+            setupTimer();
+            renderQuestion();
+            switchTab('quiz');
+        }
+
+        /* Flashcard Generation & Flipping */
+        function generateFlashcardsFromInput() {
+            const text = state.extractedText || document.getElementById('rawTextInput').value || sampleCSContent;
+            const sentences = text.split(/[.!?\n]+/).map(s => s.trim()).filter(s => s.length > 20);
+
+            state.flashcards = sentences.slice(0, 12).map((sentence, idx) => {
+                const words = sentence.split(' ');
+                const term = words.slice(0, 3).join(' ') || `Concept #${idx + 1}`;
+                return {
+                    term: term,
+                    definition: sentence
+                };
+            });
+
+            if (state.flashcards.length === 0) {
+                state.flashcards = [{ term: "Sample Concept", definition: "Please load content first." }];
+            }
+
+            state.currentCardIdx = 0;
+            renderFlashcard();
+            switchTab('flashcards');
+        }
+
+        function renderFlashcard() {
+            const card = state.flashcards[state.currentCardIdx];
+            if (!card) return;
+
+            document.getElementById('flashcardTerm').innerText = card.term;
+            document.getElementById('flashcardDefinition').innerText = card.definition;
+            document.getElementById('flashcardCounter').innerText = `${state.currentCardIdx + 1} / ${state.flashcards.length}`;
+
+            // Reset flip
+            const cardEl = document.getElementById('flashcardElement');
+            cardEl.classList.remove('rotate-y-180');
+        }
+
+        function flipFlashcard() {
+            const cardEl = document.getElementById('flashcardElement');
+            cardEl.classList.toggle('rotate-y-180');
+        }
+
+        function prevFlashcard() {
+            if (state.currentCardIdx > 0) {
+                state.currentCardIdx--;
+                renderFlashcard();
+            }
+        }
+
+        function nextFlashcard() {
+            if (state.currentCardIdx < state.flashcards.length - 1) {
+                state.currentCardIdx++;
+                renderFlashcard();
+            }
+        }
+
+        /* LocalStorage Persistence for Analytics */
+        function saveQuizToHistory(sessionData) {
+            let history = JSON.parse(localStorage.getItem('ai_preppro_history') || '[]');
+            history.unshift(sessionData);
+            localStorage.setItem('ai_preppro_history', JSON.stringify(history));
+            initHistoryStats();
+        }
+
+        function initHistoryStats() {
+            const history = JSON.parse(localStorage.getItem('ai_preppro_history') || '[]');
+            document.getElementById('headerTotalQuizzes').innerText = `${history.length} Quizzes`;
+
+            const tbody = document.getElementById('historyTableBody');
+            if (!tbody) return;
+
+            if (history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-xs text-gray-500">No previous quiz history found. Complete a quiz to view your trends!</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = history.map(item => `
+                <tr class="hover:bg-slate-900/50 transition-colors">
+                    <td class="p-3 text-xs text-gray-400">${item.date}</td>
+                    <td class="p-3 font-medium text-xs text-cyan-300">${item.subject}</td>
+                    <td class="p-3 font-bold text-xs">${item.score}</td>
+                    <td class="p-3 text-xs font-bold ${item.accuracy >= 75 ? 'text-emerald-400' : 'text-amber-400'}">${item.accuracy}%</td>
+                    <td class="p-3 text-xs text-gray-400">${item.timeSpent}</td>
+                    <td class="p-3 text-xs text-rose-300">${item.weakArea}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderHistoryCharts() {
+            const history = JSON.parse(localStorage.getItem('ai_preppro_history') || '[]').reverse();
+            const ctx = document.getElementById('historyLineChart').getContext('2d');
+
+            if (historyLineChartInstance) historyLineChartInstance.destroy();
+
+            historyLineChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: history.map((_, i) => `Quiz #${i + 1}`),
+                    datasets: [{
+                        label: 'Accuracy % Trend',
+                        data: history.map(h => h.accuracy),
+                        borderColor: '#00f3ff',
+                        backgroundColor: 'rgba(0, 243, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#a855f7'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 0, max: 100, grid: { color: 'rgba(255, 255, 255, 0.08)' }, ticks: { color: '#9ca3af' } },
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function clearHistory() {
+            if (confirm("Are you sure you want to clear your local quiz history?")) {
+                localStorage.removeItem('ai_preppro_history');
+                initHistoryStats();
+                if (historyLineChartInstance) historyLineChartInstance.destroy();
+            }
+        }
+
+        /* Export Results JSON */
+        function exportQuizResults() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                subject: state.subject,
+                timeSpentSeconds: state.timeSpentSec,
+                questions: state.questions,
+                userAnswers: state.userAnswers
+            }, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Quiz_Result_${Date.now()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        /* Manual Custom MCQ Modal */
+        function openCustomMCQModal() {
+            document.getElementById('customMCQModal').classList.remove('hidden');
+        }
+
+        function closeCustomMCQModal() {
+            document.getElementById('customMCQModal').classList.add('hidden');
+        }
+
+        function saveCustomMCQ() {
+            const statement = document.getElementById('customQStatement').value;
+            const optA = document.getElementById('customOptA').value;
+            const optB = document.getElementById('customOptB').value;
+            const optC = document.getElementById('customOptC').value;
+            const optD = document.getElementById('customOptD').value;
+            const correctIdx = parseInt(document.getElementById('customCorrectIdx').value);
+            const topic = document.getElementById('customTopic').value || "Custom Concept";
+
+            if (!statement || !optA || !optB) {
+                alert("Please fill in the statement and at least 2 options.");
+                return;
+            }
+
+            state.customMCQs.push({
+                id: Date.now(),
+                question: statement,
+                options: [optA, optB, optC || "N/A", optD || "N/A"],
+                correctAnswer: correctIdx,
+                topic: topic,
+                hint: `Manual custom question under ${topic}.`
+            });
+
+            alert("Custom MCQ added to active pool!");
+            closeCustomMCQModal();
+        }
+    </script>
 </body>
 </html>
